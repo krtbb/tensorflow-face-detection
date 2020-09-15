@@ -56,7 +56,7 @@ class TensorflowFaceDetector(object):
         """image: bgr image
         return (boxes, scores, classes, num_detections)
         """
-
+        h, w, c = image.shape
         image_expanded = np.expand_dims(image, axis=0)
         #(boxes, scores, classes, num_detections) = self.sess.run(
         #    [boxes, scores, classes, num_detections],
@@ -69,11 +69,15 @@ class TensorflowFaceDetector(object):
         scores = np.squeeze(scores)
         face_indices = np.where( scores > self.threshold )[0]
         face_boxes = boxes[face_indices]
-        face_lefts = face_boxes[:, 1]
+        face_lefts = face_boxes[:, 1].copy()
         face_boxes[:, 1] = face_boxes[:, 3]
         face_boxes[:, 3] = face_lefts
+        face_boxes[:, 0] *= h
+        face_boxes[:, 1] *= w
+        face_boxes[:, 2] *= h
+        face_boxes[:, 3] *= w
 
-        return face_boxes
+        return face_boxes.astype(np.int16)
 
 
 if __name__ == "__main__":
